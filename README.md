@@ -7,7 +7,7 @@ __PS：草和水會隨風動哦～__
 【更新內容 2015/6/22】
 * 移除錯誤方塊
 
-### [下載標準版 v2.1](https://goo.gl/UmdvTO)
-### [下載無光影版 v2.1](https://goo.gl/w5Hccc)
+### [下載標準版 v2.1](http://x.co/9Wa6f)
+### [下載無光影版 v2.1](http://x.co/9Wa6g)
 
 __之前的版本都在這：[歷史版本](https://goo.gl/l0AqFW)__
