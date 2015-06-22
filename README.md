@@ -10,8 +10,8 @@ PS：草和水會隨風動哦～
 
 
 ### 下載
-## [下載標準版 v2.1](http://x.co/9Wa6f)
-## [下載無光影版 v2.1](http://x.co/9Wa6g)
+# [下載標準版 v2.1](http://x.co/9Wa6f)
+# [下載無光影版 v2.1](http://x.co/9Wa6g)
 
 之前的版本都在這：[歷史版本](https://goo.gl/l0AqFW)
 
