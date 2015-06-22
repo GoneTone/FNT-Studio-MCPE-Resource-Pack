@@ -1,0 +1,25 @@
+#version 100
+
+// sky shader by zheka_smirnov
+
+uniform MAT4 WORLDVIEWPROJ;
+uniform vec4 FOG_COLOR;
+uniform vec4 CURRENT_COLOR;
+
+attribute mediump vec4 POSITION;
+attribute vec4 COLOR;
+
+varying vec4 color;
+
+const float fogNear = 0.3;
+
+void main()
+{
+    gl_Position = WORLDVIEWPROJ * POSITION;
+
+    vec4 clr = CURRENT_COLOR;
+    clr.r = max(clr.r, 0.2);
+    clr.b = max(clr.b, 0.5);
+    color = mix( clr, FOG_COLOR, COLOR.r );
+    
+}

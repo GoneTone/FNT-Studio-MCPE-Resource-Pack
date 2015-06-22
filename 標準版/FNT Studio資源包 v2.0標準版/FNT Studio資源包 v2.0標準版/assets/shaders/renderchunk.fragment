@@ -1,0 +1,68 @@
+#version 100
+
+// Ry's OpenGL 2.0 shaders
+
+uniform vec2 VIEWPORT_DIMENSION;
+uniform sampler2D TEXTURE_0;
+uniform sampler2D TEXTURE_1;
+
+varying vec2 uv0;
+varying vec2 uv1;
+varying vec4 color;
+varying float time;
+varying vec4 skyColor;
+
+#ifdef FOG
+	varying vec4 fogColor;
+#endif
+
+const lowp float spos = 0.90625; // 29/32
+
+float map(float x, float min, float max, float newMin, float newMax) {
+	return newMin + (newMax - newMin) * ((x - min) / (max - min));
+}
+
+void main() {
+	vec4 diffuse = texture2D(TEXTURE_0, uv0);
+	vec4 light = texture2D(TEXTURE_1, uv1);
+	
+#ifdef ALPHA_TEST
+	if(diffuse.a < 0.5)
+	 	discard;
+#endif
+
+	float vf = map(min((uv1.x+uv1.y)/2.0, 0.3), 0.6, 0.10, 0.6, 1.5);
+	//float sl = map(min(uv1.y, 0.1), 0.0, 0.2, 0.4, 0.8) + map(max(uv1.y, 0.2), 0.2, 1.5, 0.8, 1.0);
+	//float tl = map(uv1.x, 0.0, 0.5, 0.0, 1.2);
+	
+	vec2 cond = 1.0 - abs(sign(vec2(color.r - color.g, color.g - color.b))); // ==
+	float c0 = cond.x * cond.y; // &&
+	//float c1 = max(sign(color.r - 0.2), 0.0);
+	float c2 = max(1.0 - sign(uv1.y - spos), 0.0); // lt
+	float shade = c0 * clamp(map(vf, 0.0, 1.0, floor(color.r * 10.0) / 50.0, color.r + 0.4), 1.0, 1.0); // * c0
+	lowp float shady = 0.4 - abs(sign(shade)); // eq
+	
+	diffuse *= color * light;
+	diffuse.rgb *= vec3(shade*1.40 + shady, shade*1.10 + shady, shade*1.0 + shady); // Slight saturation
+	diffuse.rgb *= clamp(c2 * 1.8 + (1.0 - c2), 0.2, 1.0);
+
+#ifdef FOG
+	diffuse.rgb = mix( diffuse.rgb, fogColor.rgb, fogColor.a );
+#endif
+	gl_FragColor = diffuse;
+
+	vec4 s = color;
+	float b = (s.r + s.g + s.b) / 6.0;
+
+	if(s.r + s.b < s.g * 1.95) s.g *= 1.4;
+	if(s.r < 0.75 && s.g < 0.75 && s.b < 0.75) {
+	    gl_FragColor.r *= 0.75;
+	    gl_FragColor.g *= 0.75;
+	    gl_FragColor.b *= 0.8625;
+	}
+	else {
+	    gl_FragColor.r *= 2.0;
+	    gl_FragColor.g *= 2.0;
+	    gl_FragColor.b *= 2.0;
+	}
+}

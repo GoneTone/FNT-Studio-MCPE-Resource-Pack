@@ -1,0 +1,216 @@
+#version 100
+
+//pragma enable manual for prevent system command failure
+#pragma STDGL
+#pragma optimize (on)
+#pragma debug (off) // debug mode
+
+//Contain TRXDev Source 
+//Contain Jocopa3 Source
+
+//Ry's OpenGL 2.0 Shader
+// Credits to Jocopa3
+
+uniform MAT4 WORLDVIEWPROJ;
+uniform vec4 FOG_COLOR;
+uniform vec2 FOG_CONTROL;
+uniform float RENDER_DISTANCE;
+//uniform vec2 VIEWPORT_DIMENSION;
+uniform vec4 CURRENT_COLOR;		//current color r contains the offset to apply to the fog for the "fade in"
+uniform POS3 CHUNK_ORIGIN;
+uniform POS3 VIEW_POS;
+uniform float FAR_CHUNKS_DISTANCE;
+uniform sampler2D TEXTURE_1;
+
+// Courtesy of Tommaso
+uniform highp float TIME; // Time since the game started in seconds
+
+attribute POS4 POSITION;
+attribute vec4 COLOR;
+attribute vec2 TEXCOORD_0;
+attribute vec2 TEXCOORD_1;
+
+varying vec2 uv0;
+varying vec2 uv1;
+varying vec4 color;
+//varying float time;
+//varying vec4 skyColor;
+
+#ifdef FOG
+	varying vec4 fogColor;
+#endif
+
+const float rA = 1.0;
+const float rB = 1.0;
+const vec3 UNIT_Y = vec3(0,1,0);
+const float DIST_DESATURATION = 56.0 / 255.0; //WARNING this value is also hardcoded in the water color, don'tchange
+
+// Magic constant, Do not touch!
+// Exact value is: sqrt(2387) / 51
+const mediump float maxDist = 0.9579790980632242;
+
+const highp float pi = 3.1415926535898932;
+
+//const float rend = (RENDER_DISTANCE - 64.0)/32.0;
+//const float rpos = (RENDER_DISTANCE);
+//rpos *= rpos;
+
+void main()
+{	
+	// Gets the sky color from the lightmap
+	//skyColor = texture2D( TEXTURE_1, UNIT_Y.xy );
+	
+	// Gets the time of day where 1.0 = day and 0.0 = night, and changes during sunrise/sunset
+	// I may change this to distance squared if it hurts performance too much
+	//time = 1.0 - ((length(skyColor.rgb)) / maxDist); 
+	
+    uv0 = TEXCOORD_0;
+    uv1 = TEXCOORD_1;
+	color = COLOR;
+
+	// x,y,z position of block in the world
+	vec3 xyz = POSITION.xyz + CHUNK_ORIGIN;
+	vec3 relPos = VIEW_POS - (xyz);
+	
+// Handles water waves only when near water
+// Also handles leaves and grass waves only when rendering leaves and grass
+#ifdef NEAR_WATER
+	vec4 pp = POSITION; // Temporary POSITION so that we can modify POSITION without breaking other code
+	float wav = 0.0;
+	float h = fract(pp.y);
+	float c0 = max(sign(h - 0.8125), 0.0);
+	float c1 = 1.0 - max(sign(h - 0.9), 0.0);
+	//float tpos = dot(relPos, relPos);
+
+	#ifdef FANCY
+		//vec2 tex = floor(vec2(TEXCOORD_0.x * 32.0, TEXCOORD_0.y * 16.0)); // Current texture
+		//lowp float c1 = (1.0 - abs(sign(tex.y - 5.0))) * (1.0 - abs(sign(tex.x - 14.0))) * (1.0 - abs(sign(tex.x - 15.0)));
+		wav = (sin(TIME * 2.5 + 0.112 * xyz.x) + sin(TIME * 2.5 + 0.12 * xyz.z)*0.81) * 0.052 + (sin(TIME * 2.5 + xyz.x * 0.8)*0.83 + sin(TIME * 2.5 + 0.935 * xyz.z)) * 0.061 - 0.125;
+	#else
+		wav = (sin(TIME * 2.5 + xyz.x) + sin(TIME * 2.5 + xyz.z*1.5)) * 0.0715 - 0.0625;
+	#endif
+	pp.y += wav * c0 * c1;
+	POS4 pos = WORLDVIEWPROJ * pp; // Set wavy position
+#elif defined(ALPHA_TEST)
+	vec4 pp = POSITION; // Temporary POSITION so that we can modify POSITION without breaking other code
+	vec2 tex = floor(vec2(TEXCOORD_0.x * 32.0, TEXCOORD_0.y * 16.0)); // Current texture
+	vec3 wavs = vec3(0.0);
+	#ifdef FANCY
+		//vec3 wavs = vec3(cos(TIME * 0.9 + xyz.x)*0.125, 0.0, sin(TIME * 1.05 + xyz.z)*0.125) * cc1;
+		//wavs += vec3(cos(TIME * 0.8 + xyz.x)*0.125, cos(TIME * 0.7 + xyz.y) * 0.0625, sin(TIME * 0.85 + xyz.z)*0.125) * cc2;
+		
+		// I really hate if-statements, but it's faster than calculating sine however many times
+		if((tex.y == 4.0 && tex.x > 17.0) || (tex.y == 5.0 && tex.x < 4.0) || (tex.y == 7.0 && (tex.x == 25.0 || tex.x == 26.0))){
+			mediump float f = sin(TIME * 2.0 * pi / 2.9) * 0.00375 + 0.01125;
+			mediump float s0 = sin(TIME * 2.0 * pi / 15.9) * 2.7;
+			mediump float s1 = sin(TIME * 2.0 * pi / 11.2) * 3.1;
+			wavs.x = sin((TIME * 3.0 * pi / 1.31) + (xyz.x + s0)*0.92 + (xyz.z + s0)*0.87) * f;
+			wavs.y = sin((TIME * 3.0 * pi / 1.51) + (xyz.z + s0) + (xyz.x + s1)) * f;
+			wavs.z = sin((TIME * 3.0 * pi / 1.59) + (xyz.z + s0)*0.88 + (xyz.x + s1)*0.91) * f;
+
+			wavs *= 0.5;
+		}else if((tex.y == 2.0 && tex.x < 28.0) || (tex.y == 4.0 && tex.x < 5.0) || (tex.y == 6.0 && tex.x < 6.0) || (tex.y == 9.0 && tex.x < 2.0) || (tex.y == 8.0 && tex.x > 21.0) || (tex.y == 5.0 && tex.x > 29.0)){
+			float c1 = max(sign(tex.x - 11.0), 0.0) * max(1.0 - sign(tex.x - 22.0), 0.0) * (1.0 - abs(sign(tex.y - 2.0)));
+			float h = (1.0 - fract(TEXCOORD_0.y * 16.0)) + 0.5 * c1;
+			
+			mediump float f = (sin(TIME * 2.0 * pi / 2.9) * 0.00375 + 0.01125) * h * h;
+			mediump float s0 = sin(TIME * 2.0 * pi / 12.2) * 3.2;
+			mediump float s1 = sin(TIME * 2.0 * pi / 14.8) * 2.3;
+			wavs.x = sin((TIME * 3.0 * pi / 1.12) + (xyz.x + s0)*0.89 + (xyz.z + s0)*0.97) * f;
+			wavs.y = sin((TIME * 3.0 * pi / 1.6) + (xyz.z + s0) + (xyz.x + s1)) * f;
+			wavs.z = sin((TIME * 3.0 * pi / 1.26) + (xyz.z + s0)*0.93 + (xyz.x + s1)*0.8) * f;
+			
+			wavs *= 1.7;
+			//color.rgb = vec3(h/2.0);
+		}else if(tex.y == 5.0 && (tex.x == 14.0 || tex.x == 15.0)){
+			wavs.y = (sin(TIME * 2.5 + 0.112 * xyz.x) + sin(TIME * 2.5 + 0.12 * xyz.z)*0.81) * 0.052 + (sin(TIME * 2.5 + xyz.x * 0.8)*0.83 + sin(TIME * 2.5 + 0.935 * xyz.z)) * 0.061 - 0.125;
+		}
+	#else
+		//float c1 = (1.0 - abs(sign(tex.y - 5.0))) * ((1.0 - abs(sign(tex.x - 14.0))) + (1.0 - abs(sign(tex.x - 15.0))));
+		if(tex.y == 5.0 && (tex.x == 14.0 || tex.x == 15.0)){
+			wavs.y = ((sin(TIME * 2.5 + xyz.x) + sin(TIME * 2.5 + xyz.z*1.5)) * 0.0715 - 0.0625);// * c1;
+		}else if((tex.y == 2.0 && tex.x < 28.0) || (tex.y == 4.0 && tex.x < 5.0) || (tex.y == 6.0 && tex.x < 6.0) || (tex.y == 9.0 && tex.x < 2.0) || (tex.y == 8.0 && tex.x > 21.0) || (tex.y == 5.0 && tex.x > 29.0)){
+			float c1 = max(sign(tex.x - 11.0), 0.0) * max(1.0 - sign(tex.x - 22.0), 0.0) * (1.0 - abs(sign(tex.y - 2.0)));
+			float h = (1.0 - fract(TEXCOORD_0.y * 16.0)) + 0.5 * c1;
+			
+			mediump float f = (sin(TIME * 2.0 * pi / 2.9) * 0.00375 + 0.01125) * h * h;
+			wavs.x = sin((TIME * 3.0 * pi / 1.12) + (xyz.x + f * 1.13)*1.78) * f;
+			wavs.y = sin((TIME * 3.0 * pi / 1.6) + (xyz.z + f * 1.13)) * f;
+			wavs.z = sin((TIME * 3.0 * pi / 1.26) + (xyz.z + f * 1.13)*1.86) * f;
+			
+			wavs *= 0.5;
+			//color.rgb = vec3(h/2.0);
+		}
+	#endif
+	pp.xyz += wavs;
+	POS4 pos = WORLDVIEWPROJ * pp; // Set wavy position
+#else
+	POS4 pos = WORLDVIEWPROJ * POSITION; // Set usual position
+#endif
+gl_Position = pos;
+
+// Leaves, tall grass, flowers, glass, ladders, etc are all alpha tested
+// Since I want to mess with leaves and tall grass only, doing it this way makes it faster
+
+
+///// find distance from the camera
+
+#if defined(FOG) || defined(NEAR_WATER)
+	#ifdef FANCY
+		float cameraDepth = length(relPos);
+	#else
+		float cameraDepth = pos.z;
+	#endif
+#endif
+
+///// apply fog
+ 
+#ifdef FOG
+	float len = cameraDepth / RENDER_DISTANCE;
+	#ifdef ALLOW_FADE
+		len += CURRENT_COLOR.r;
+	#endif
+	fogColor.rgb = FOG_COLOR.rgb;
+	fogColor.a = clamp((len - FOG_CONTROL.x) / (FOG_CONTROL.y - FOG_CONTROL.x), 0.0, 0.8);
+#endif
+
+///// water magic
+#ifdef NEAR_WATER
+	#ifdef FANCY  /////enhance water
+		float F = dot(normalize(relPos), vec3(1.05, 1.05 + wav * 2.6, 1.05)); // Shade based on wavyness
+		//float F = max( dot(l,n), 0.8);
+
+		//if both NEAR_WATER and FOG are defined, it's forced fog and we're underwater
+		#ifndef FOG  //over water
+			F = 1.0 - max(F, 0.1);
+		#else //under water
+			color.a = 0.50; //disable fake transparency and be transparent
+		#endif
+
+		F = -0.6 - mix(F*F*F*F, 1.0, min(1.0, cameraDepth / FAR_CHUNKS_DISTANCE));
+
+		color.rg -= vec2(F * DIST_DESATURATION);
+
+		vec4 depthColor = vec4(color.rgb * 0.55, 0.85);
+		vec4 traspColor = vec4(color.rgb * 0.17, 0.75);
+		vec4 surfColor = vec4(color.rgb, 0.65);
+
+		vec4 nearColor = mix(traspColor, depthColor, color.a);
+		color = mix(surfColor, nearColor, F);
+	#else
+		color.a = pos.z / FAR_CHUNKS_DISTANCE + 0.1 + wav; // Shade based on wavyness
+	#endif //FANCY
+
+ #else
+color = vec4(color.rgb * 1.2 , 0.4);
+
+if(color.r > 2.1 && color.g > 2.1 && color.b > 2.1)
+{
+color.r *= 1.05;
+}
+if(color.b > 0.2)
+{
+color.a = 0.008;
+}
+#endif
+}
