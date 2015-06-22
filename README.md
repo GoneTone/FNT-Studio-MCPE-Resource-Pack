@@ -7,7 +7,7 @@ __PS：草和水會隨風動哦～__
 【更新內容 2015/6/22】
 * 移除錯誤方塊
 
-### [下載標準版 v2.1](https://www.dropbox.com/home/%E6%B0%B8%E9%81%A0%E4%B9%8B%E5%A4%9C%20%E8%B3%87%E6%BA%90%E5%88%86%E4%BA%AB/%E6%B0%B8%E9%81%A0%E4%B9%8B%E5%A4%9C%20%E5%9C%98%E9%9A%8A%E8%B3%87%E6%BA%90%E5%8C%85/%E6%B0%B8%E9%81%A0%E4%B9%8B%E5%A4%9C%E8%B3%87%E6%BA%90%E5%8C%85%20v2.1/%E6%A8%99%E6%BA%96%E7%89%88?preview=FNT+Studio%E8%B3%87%E6%BA%90%E5%8C%85+v2.1%E6%A8%99%E6%BA%96%E7%89%88.zip)
-### [下載無光影版 v2.1](https://www.dropbox.com/home/%E6%B0%B8%E9%81%A0%E4%B9%8B%E5%A4%9C%20%E8%B3%87%E6%BA%90%E5%88%86%E4%BA%AB/%E6%B0%B8%E9%81%A0%E4%B9%8B%E5%A4%9C%20%E5%9C%98%E9%9A%8A%E8%B3%87%E6%BA%90%E5%8C%85/%E6%B0%B8%E9%81%A0%E4%B9%8B%E5%A4%9C%E8%B3%87%E6%BA%90%E5%8C%85%20v2.1/%E7%84%A1%E5%85%89%E5%BD%B1%E7%89%88?preview=FNT+Studio%E8%B3%87%E6%BA%90%E5%8C%85+v2.1%E7%84%A1%E5%85%89%E5%BD%B1%E7%89%88.zip)
+### [下載標準版 v2.1](https://goo.gl/UmdvTO)
+### [下載無光影版 v2.1](https://goo.gl/w5Hccc)
 
-__之前的版本都在這：[歷史版本](https://www.dropbox.com/home/%E6%B0%B8%E9%81%A0%E4%B9%8B%E5%A4%9C%20%E8%B3%87%E6%BA%90%E5%88%86%E4%BA%AB/%E6%B0%B8%E9%81%A0%E4%B9%8B%E5%A4%9C%20%E5%9C%98%E9%9A%8A%E8%B3%87%E6%BA%90%E5%8C%85)__
+__之前的版本都在這：[歷史版本](https://goo.gl/l0AqFW)__
