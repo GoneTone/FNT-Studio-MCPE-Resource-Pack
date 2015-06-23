@@ -10,8 +10,8 @@ PS：草和水會隨風動哦～
 
 
 ### 下載
-* [下載標準版 v2.2](http://x.co/9WbEJ)
-* [下載無光影版 v2.2](http://x.co/9WbEK)
+* [下載標準版 v2.2](https://github.com/GoneTone/FNT-Studio-MCPE-Resource-Pack/releases/download/v2.2/FNT_Resource_Pack_Standard_v2.2.zip)
+* [下載無光影版 v2.2](https://github.com/GoneTone/FNT-Studio-MCPE-Resource-Pack/releases/download/v2.2/FNT_Resource_Pack_No_light_and_shadow_v2.2.zip)
 
 之前的版本都在這：[歷史版本](http://x.co/9WbEI)
 
